@@ -4,6 +4,7 @@
 local awful, beautiful, gears, naughty, wibox = require("awful"), require("beautiful"), require("gears"), require("naughty"), require("wibox")
 local string, tostring, os, capi              = string, tostring, os, {mouse = mouse, screen = screen}
 require("awful.autofocus")
+local hotkeys_popup = require("awful.hotkeys_popup").widget
 
 --------------------
 -- Error handling --
@@ -27,40 +28,54 @@ theme.font                                                                      
 theme.bg_normal, theme.bg_focus, theme.bg_urgent, theme.bg_minimize              = "#000000", "#000000", "#ff0000", "#444444"
 theme.fg_normal, theme.fg_focus, theme.fg_urgent, theme.fg_minimize              = "#999999", "#ffffff", "#ffffff", "#000000"
 theme.border_width, theme.border_normal, theme.border_focus, theme.border_marked = "1", "#444444", "#ffffff", "#990000"
-naughty.config.presets.normal                                                    = {position = "top_right", bg = "#000000", fg = "#ffffff", border_color = "#ffffff"}
 beautiful.init(theme)
+
+
+--------------------
+-- Some functions --
+--------------------
+change_tag_name = function() awful.spawn.easy_async('rofi -p "Tag name: " -lines 1 -dmenu',
+                                                    function(stdout, stderr, reason, exit_code)
+                                                       if stdout ~= '\n' and stdout ~= '' then mouse.screen.selected_tag.name = mouse.screen.selected_tag.index .. ":" .. stdout
+                                                       else mouse.screen.selected_tag.name = mouse.screen.selected_tag.index end
+                                                   end)
+end
+spawn_ssh = function() awful.spawn.with_shell('ls /home/hybris/dev/bearstech/bearstech/infra/host | sed "s/^/1 root@/" > /home/hybris/.cache/rofi-2.sshcache && rofi -lines 50 -modi ssh -show ssh') end
 
 ----------
 -- Keys --
 ----------
 modkey     = "Mod4"
 globalkeys = awful.util.table.join({},
-           awful.key({modkey, "Control"}, "r",     awesome.restart),
-           awful.key({modkey, "Control"}, "q",     awesome.quit),
-           awful.key({modkey}, "Return",           function() awful.spawn("urxvtc") end),
-           awful.key({modkey}, "e",                function() awful.spawn("emacsclient -c -n") end),
-           awful.key({modkey}, "F1",               function() awful.spawn.easy_async('rofi -p "Tag name: " -lines 1 -dmenu', function(stdout, stderr, reason, exit_code)
-                                                                                                                               if stdout ~= '\n' and stdout ~= '' then mouse.screen.selected_tag.name = mouse.screen.selected_tag.index .. ":" .. stdout else mouse.screen.selected_tag.name = mouse.screen.selected_tag.index end
-                                                                                                                             end)
-                                                   end),
-           awful.key({modkey}, "F2",               function() awful.spawn('rofi -modi run -show run') end),
-           awful.key({modkey}, "F3",               function() awful.spawn.with_shell('ls /home/hybris/dev/bearstech/bearstech/infra/host | sed "s/^/1 root@/" > /home/hybris/.cache/rofi-2.sshcache && rofi -lines 50 -modi ssh -show ssh') end),
-           awful.key({modkey}, "j",                function() awful.spawn('rofi -modi window -show window') end),
-           awful.key({modkey}, "s",                function() awful.screen.focus(screen.count() - mouse.screen.index + 1) end),
-           awful.key({modkey}, "Left",             awful.tag.viewprev),
-           awful.key({modkey}, "Right",            awful.tag.viewnext),
-           awful.key({modkey}, "Escape",           awful.tag.history.restore),
-           awful.key({modkey, "Shift"}, "Left",    function() awful.client.focus.bydirection("left") end),
-           awful.key({modkey, "Shift"}, "Right",   function() awful.client.focus.bydirection("right") end),
-           awful.key({modkey, "Shift"}, "Up",      function() awful.client.focus.bydirection("up") end),
-           awful.key({modkey, "Shift"}, "Down",    function() awful.client.focus.bydirection("down") end),
-           awful.key({modkey}, "Tab",              function() awful.client.focus.byidx(1) end),
-           awful.key({modkey, "Shift"}, "Tab",     function() awful.client.focus.byidx(-1) end),
-           awful.key({modkey, "Control"}, "Left",  function() awful.client.swap.bydirection("left") end),
-           awful.key({modkey, "Control"}, "Right", function() awful.client.swap.bydirection("right") end),
-           awful.key({modkey, "Control"}, "Up",    function() awful.client.swap.bydirection("up") end),
-           awful.key({modkey, "Control"}, "Down",  function() awful.client.swap.bydirection("down") end),
-           awful.key({modkey}, "space",            function() awful.layout.inc({awful.layout.suit.fair, awful.layout.suit.max}, 1) end))
+           awful.key({modkey, "Control"}, "r",     awesome.restart,                                                                     {description = "Reload awesome",                             group = "Awesome"}),
+           awful.key({modkey, "Control"}, "q",     awesome.quit,                                                                        {description = "Quit awesome",                               group = "Awesome"}),
+           awful.key({modkey}, "h",                hotkeys_popup.show_help,                                                             {description = "Show this help",                             group = "Awesome"}),
+
+           awful.key({modkey}, "Return",           function() awful.spawn("urxvtc") end,                                                {description = "Spawn a terminal",                           group = "Launcher"}),
+           awful.key({modkey}, "F2",               function() awful.spawn('rofi -modi run -show run') end,                              {description = "Launcher",                                   group = "Launcher"}),
+           awful.key({modkey}, "e",                function() awful.spawn("emacsclient -c -n") end,                                     {description = "Spawn an emacs",                             group = "Launcher"}),
+           awful.key({modkey}, "F3",               spawn_ssh,                                                                           {description = "Spawn a terminal, SSH to the given address", group = "Launcher"}),
+
+           awful.key({modkey}, "Left",             awful.tag.viewprev,                                                                  {description = "Move to previous tag",                       group = "Tag"}),
+           awful.key({modkey}, "Right",            awful.tag.viewnext,                                                                  {description = "Move to next tag",                           group = "Tag"}),
+           awful.key({modkey}, "Escape",           awful.tag.history.restore,                                                           {description = "Move to previously selected tag",            group = "Tag"}),
+           awful.key({modkey}, "s",                function() awful.screen.focus(screen.count() - mouse.screen.index + 1) end,          {description = "Switch to selected tag on the other screen", group = "Tag"}),
+           awful.key({modkey}, "F1",               change_tag_name,                                                                     {description = "Change tag name",                            group = "Tag"}),
+           awful.key({modkey}, "j",                function() awful.spawn('rofi -modi window -show window') end,                        {description = "Switch tag by selecting window",             group = "Tag"}),
+           awful.key({modkey}, "space",            function() awful.layout.inc({awful.layout.suit.fair, awful.layout.suit.max}, 1) end, {description = "Switch between 'fair' and 'max' layouts",    group = "Tag"}),
+
+           awful.key({modkey}, "Tab",              function() awful.client.focus.byidx(1) end,                                          {description = "Select next client",                         group = "Client"}),
+           awful.key({modkey, "Shift"}, "Tab",     function() awful.client.focus.byidx(-1) end,                                         {description = "Select previous client",                     group = "Client"}),
+           awful.key({modkey, "Shift"}, "Left",    function() awful.client.focus.bydirection("left") end,                               {description = "Select client on the left",                  group = "Client"}),
+           awful.key({modkey, "Shift"}, "Right",   function() awful.client.focus.bydirection("right") end,                              {description = "Select client on the right",                 group = "Client"}),
+           awful.key({modkey, "Shift"}, "Up",      function() awful.client.focus.bydirection("up") end,                                 {description = "Select client on the top",                   group = "Client"}),
+           awful.key({modkey, "Shift"}, "Down",    function() awful.client.focus.bydirection("down") end,                               {description = "Select client on the bottom",                group = "Client"}),
+           awful.key({modkey, "Control"}, "Left",  function() awful.client.swap.bydirection("left") end,                                {description = "Swap with client on the left",               group = "Client"}),
+           awful.key({modkey, "Control"}, "Right", function() awful.client.swap.bydirection("right") end,                               {description = "Swap with client on the right",              group = "Client"}),
+           awful.key({modkey, "Control"}, "Up",    function() awful.client.swap.bydirection("up") end,                                  {description = "Swap with client on the top",                group = "Client"}),
+           awful.key({modkey, "Control"}, "Down",  function() awful.client.swap.bydirection("down") end,                                {description = "Swap with client on the bottom",             group = "Client"}))
+
+
 
 for i = 1, 9
 do
@@ -72,7 +87,7 @@ end
 root.keys(globalkeys)
 
 clientkeys = awful.util.table.join({},
-           awful.key({modkey}, "f",           function(c) c.fullscreen = not c.fullscreen end),
+           awful.key({modkey}, "f",           function(c) c.maximized = not c.maximized end),
            awful.key({modkey, "Shift"}, "c",  function(c) c:kill() end),
            awful.key({modkey, "Shift"}, "s",  function(c) c:move_to_screen() end))
 clientbuttons = awful.button({modkey}, 1,     function(c) awful.mouse.client.move(c) end)
@@ -82,17 +97,12 @@ clientbuttons = awful.button({modkey}, 1,     function(c) awful.mouse.client.mov
 -------------
 awful.screen.connect_for_each_screen(function(s)
    awful.tag({1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42}, s, awful.layout.suit.fair)
-   gears.wallpaper.fit("/home/hybris/.wallpaper", s, "#000000")
    s.topbox = awful.wibar({position = "top", screen = s, height = 14})
    s.topbox:setup({layout = wibox.layout.align.horizontal,
-                   {layout = wibox.layout.fixed.horizontal,
-                    awful.widget.taglist(s, awful.widget.taglist.filter.noempty),
-                    wibox.widget.textbox(" | ")},
+                   {layout = wibox.layout.fixed.horizontal, awful.widget.taglist(s, awful.widget.taglist.filter.noempty), wibox.widget.textbox(" | ")},
                    awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, nil),
-                   {layout = wibox.layout.fixed.horizontal,
-                    wibox.widget.systray(),
-                    wibox.widget.textbox(" | "),
-                    wibox.widget.textclock("<span color='" .. theme.fg_focus .. "'>%d/%m/%Y %R</span>")}})
+                   {layout = wibox.layout.fixed.horizontal, wibox.widget.systray(), wibox.widget.textbox(" | "), wibox.widget.textclock("<span color='" .. theme.fg_focus .. "'>%d/%m/%Y %R</span>")}})
+   gears.wallpaper.maximized("/home/hybris/.wallpaper", s, "#000000")
 end)
 
 awful.rules.rules = {{rule = {}, properties = {border_width = beautiful.border_width, focus = awful.client.focus.filter, size_hints_honor = false, keys = clientkeys, buttons = clientbuttons}}}
@@ -104,9 +114,7 @@ client.connect_signal("manage", function (c)
                          end
 end)
 client.connect_signal("mouse::enter", function(c)
-                         if awful.layout.get(c.screen) ~= awful.layout.suit.magnifier and awful.client.focus.filter(c) then
-                            client.focus = c
-                         end
+                         if awful.layout.get(c.screen) ~= awful.layout.suit.magnifier and awful.client.focus.filter(c) then client.focus = c end
 end)
 
 client.connect_signal("focus",   function(c) c.border_color = beautiful.border_focus end)
