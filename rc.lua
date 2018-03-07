@@ -105,7 +105,11 @@ awful.screen.connect_for_each_screen(function(s)
    gears.wallpaper.maximized("/home/hybris/.wallpaper", s, "#000000")
 end)
 
-awful.rules.rules = {{rule = {}, properties = {border_width = beautiful.border_width, focus = awful.client.focus.filter, size_hints_honor = false, keys = clientkeys, buttons = clientbuttons}}}
+if screen:count() == 2 then
+   awful.rules.rules = {{rule = {}, properties = {border_width = beautiful.border_width, focus = awful.client.focus.filter, size_hints_honor = false, keys = clientkeys, buttons = clientbuttons, screen = "HDMI-1"}}}
+else
+   awful.rules.rules = {{rule = {}, properties = {border_width = beautiful.border_width, focus = awful.client.focus.filter, size_hints_honor = false, keys = clientkeys, buttons = clientbuttons}}}
+end
 
 client.connect_signal("manage", function (c)
                          if awesome.startup then
@@ -130,5 +134,5 @@ awful.spawn.with_shell("killall xbindkeys 2> /dev/null      ; xbindkeys")
 awful.spawn.with_shell("killall nm-applet 2> /dev/null      ; nm-applet")
 awful.spawn.with_shell("killall pasystray 2> /dev/null      ; pasystray")
 awful.spawn.with_shell("killall blueman-applet 2> /dev/null ; blueman-applet > /dev/null 2>&1")
-awful.spawn.with_shell("killall conky 2> /dev/null          ; conky -q")
+awful.spawn.with_shell("killall conky 2> /dev/null          ; conky -q -b")
 awful.spawn.with_shell("ps aux | grep batterymon | grep -v grep || python /home/hybris/dev/misc/batterymon-clone/batterymon -t 24x24_wide")
