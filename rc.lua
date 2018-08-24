@@ -5,6 +5,7 @@ local awful, beautiful, gears, naughty, wibox = require("awful"), require("beaut
 local string, tostring, os, capi              = string, tostring, os, {mouse = mouse, screen = screen}
 require("awful.autofocus")
 local hotkeys_popup = require("awful.hotkeys_popup").widget
+default_path = "/home/hybris/"
 
 --------------------
 -- Error handling --
@@ -24,7 +25,7 @@ end
 -- Basic theming --
 -------------------
 theme                                                                            = {}
-theme.font                                                                       = "Ubuntu Mono 10"
+theme.font                                                                       = "Ubuntu Mono 9"
 theme.bg_normal, theme.bg_focus, theme.bg_urgent, theme.bg_minimize              = "#000000", "#000000", "#ff0000", "#444444"
 theme.fg_normal, theme.fg_focus, theme.fg_urgent, theme.fg_minimize              = "#999999", "#ffffff", "#ffffff", "#000000"
 theme.border_width, theme.border_normal, theme.border_focus, theme.border_marked = "1", "#444444", "#ffffff", "#990000"
@@ -34,7 +35,7 @@ beautiful.init(theme)
 --------------------
 -- Some functions --
 --------------------
-change_tag_name = function() awful.spawn.easy_async('rofi -p "Tag name: " -lines 1 -dmenu',
+change_tag_name = function() awful.spawn.easy_async('rofi -p "Tag name" -lines 1 -dmenu',
                                                     function(stdout, stderr, reason, exit_code)
                                                        if stdout ~= '\n' and stdout ~= '' then mouse.screen.selected_tag.name = mouse.screen.selected_tag.index .. ":" .. stdout
                                                        else mouse.screen.selected_tag.name = mouse.screen.selected_tag.index end
@@ -46,15 +47,17 @@ spawn_ssh = function() awful.spawn.with_shell('ls /home/hybris/dev/bearstech/bea
 -- Keys --
 ----------
 modkey     = "Mod4"
+terminal   = "urxvtc"
 globalkeys = awful.util.table.join({},
            awful.key({modkey, "Control"}, "r",     awesome.restart,                                                                     {description = "Reload awesome",                             group = "Awesome"}),
            awful.key({modkey, "Control"}, "q",     awesome.quit,                                                                        {description = "Quit awesome",                               group = "Awesome"}),
            awful.key({modkey}, "h",                hotkeys_popup.show_help,                                                             {description = "Show this help",                             group = "Awesome"}),
 
-           awful.key({modkey}, "Return",           function() awful.spawn("urxvtc") end,                                                {description = "Spawn a terminal",                           group = "Launcher"}),
+           awful.key({modkey}, "Return",           function() awful.spawn(terminal .. " -cd " .. default_path) end,                     {description = "Spawn a terminal",                           group = "Launcher"}),
            awful.key({modkey}, "F2",               function() awful.spawn('rofi -modi run -show run') end,                              {description = "Launcher",                                   group = "Launcher"}),
            awful.key({modkey}, "e",                function() awful.spawn("emacsclient -c -n") end,                                     {description = "Spawn an emacs",                             group = "Launcher"}),
            awful.key({modkey}, "F3",               spawn_ssh,                                                                           {description = "Spawn a terminal, SSH to the given address", group = "Launcher"}),
+           awful.key({modkey}, "F4",               change_default_path,                                                                 {description = "Chante console default path",                group = "Launcher"}),
 
            awful.key({modkey}, "Left",             awful.tag.viewprev,                                                                  {description = "Move to previous tag",                       group = "Tag"}),
            awful.key({modkey}, "Right",            awful.tag.viewnext,                                                                  {description = "Move to next tag",                           group = "Tag"}),
@@ -134,5 +137,4 @@ awful.spawn.with_shell("killall xbindkeys 2> /dev/null      ; xbindkeys")
 awful.spawn.with_shell("killall nm-applet 2> /dev/null      ; nm-applet")
 awful.spawn.with_shell("killall pasystray 2> /dev/null      ; pasystray")
 awful.spawn.with_shell("killall blueman-applet 2> /dev/null ; blueman-applet > /dev/null 2>&1")
-awful.spawn.with_shell("killall conky 2> /dev/null          ; conky -q -b")
 awful.spawn.with_shell("ps aux | grep batterymon | grep -v grep || python /home/hybris/dev/misc/batterymon-clone/batterymon -t 24x24_wide")
