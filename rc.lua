@@ -25,7 +25,7 @@ end
 -- Basic theming --
 -------------------
 theme                                                                            = {}
-theme.font                                                                       = "Ubuntu Mono 9"
+theme.font                                                                       = "Ubuntu Mono 14"
 theme.bg_normal, theme.bg_focus, theme.bg_urgent, theme.bg_minimize              = "#000000", "#000000", "#ff0000", "#444444"
 theme.fg_normal, theme.fg_focus, theme.fg_urgent, theme.fg_minimize              = "#999999", "#ffffff", "#ffffff", "#000000"
 theme.border_width, theme.border_normal, theme.border_focus, theme.border_marked = "1", "#444444", "#ffffff", "#990000"
@@ -100,7 +100,7 @@ clientbuttons = awful.button({modkey}, 1,     function(c) awful.mouse.client.mov
 -------------
 awful.screen.connect_for_each_screen(function(s)
    awful.tag({1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42}, s, awful.layout.suit.fair)
-   s.topbox = awful.wibar({position = "top", screen = s, height = 14})
+   s.topbox = awful.wibar({position = "top", screen = s, height = 20})
    s.topbox:setup({layout = wibox.layout.align.horizontal,
                    {layout = wibox.layout.fixed.horizontal, awful.widget.taglist(s, awful.widget.taglist.filter.noempty), wibox.widget.textbox(" | ")},
                    awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, nil),
@@ -108,11 +108,7 @@ awful.screen.connect_for_each_screen(function(s)
    gears.wallpaper.maximized("/home/hybris/.wallpaper", s, "#000000")
 end)
 
-if screen:count() == 2 then
-   awful.rules.rules = {{rule = {}, properties = {border_width = beautiful.border_width, focus = awful.client.focus.filter, size_hints_honor = false, keys = clientkeys, buttons = clientbuttons, screen = "HDMI-1"}}}
-else
-   awful.rules.rules = {{rule = {}, properties = {border_width = beautiful.border_width, focus = awful.client.focus.filter, size_hints_honor = false, keys = clientkeys, buttons = clientbuttons}}}
-end
+awful.rules.rules = {{rule = {}, properties = {border_width = beautiful.border_width, focus = awful.client.focus.filter, size_hints_honor = false, keys = clientkeys, buttons = clientbuttons, screen = "eDP1"}}}
 
 client.connect_signal("manage", function (c)
                          if awesome.startup then
