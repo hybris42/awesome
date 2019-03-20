@@ -5,7 +5,6 @@ local awful, beautiful, gears, naughty, wibox = require("awful"), require("beaut
 local string, tostring, os, capi              = string, tostring, os, {mouse = mouse, screen = screen}
 require("awful.autofocus")
 local hotkeys_popup = require("awful.hotkeys_popup").widget
-default_path = "/home/hybris/"
 
 --------------------
 -- Error handling --
@@ -25,12 +24,11 @@ end
 -- Basic theming --
 -------------------
 theme                                                                            = {}
-theme.font                                                                       = "Ubuntu Mono 14"
+theme.font                                                                       = "Ubuntu Mono 16"
 theme.bg_normal, theme.bg_focus, theme.bg_urgent, theme.bg_minimize              = "#000000", "#000000", "#ff0000", "#444444"
 theme.fg_normal, theme.fg_focus, theme.fg_urgent, theme.fg_minimize              = "#999999", "#ffffff", "#ffffff", "#000000"
 theme.border_width, theme.border_normal, theme.border_focus, theme.border_marked = "1", "#444444", "#ffffff", "#990000"
 beautiful.init(theme)
-
 
 --------------------
 -- Some functions --
@@ -53,12 +51,10 @@ globalkeys = awful.util.table.join({},
            awful.key({modkey, "Control"}, "q",     awesome.quit,                                                                        {description = "Quit awesome",                               group = "Awesome"}),
            awful.key({modkey}, "h",                hotkeys_popup.show_help,                                                             {description = "Show this help",                             group = "Awesome"}),
 
-           awful.key({modkey}, "Return",           function() awful.spawn(terminal .. " -cd " .. default_path) end,                     {description = "Spawn a terminal",                           group = "Launcher"}),
+           awful.key({modkey}, "Return",           function() awful.spawn(terminal) end,                                                {description = "Spawn a terminal",                           group = "Launcher"}),
            awful.key({modkey}, "F2",               function() awful.spawn('rofi -modi run -show run') end,                              {description = "Launcher",                                   group = "Launcher"}),
            awful.key({modkey}, "e",                function() awful.spawn("emacsclient -c -n") end,                                     {description = "Spawn an emacs",                             group = "Launcher"}),
            awful.key({modkey}, "F3",               spawn_ssh,                                                                           {description = "Spawn a terminal, SSH to the given address", group = "Launcher"}),
-           awful.key({modkey}, "F4",               change_default_path,                                                                 {description = "Chante console default path",                group = "Launcher"}),
-
            awful.key({modkey}, "Left",             awful.tag.viewprev,                                                                  {description = "Move to previous tag",                       group = "Tag"}),
            awful.key({modkey}, "Right",            awful.tag.viewnext,                                                                  {description = "Move to next tag",                           group = "Tag"}),
            awful.key({modkey}, "Escape",           awful.tag.history.restore,                                                           {description = "Move to previously selected tag",            group = "Tag"}),
@@ -95,17 +91,37 @@ clientkeys = awful.util.table.join({},
            awful.key({modkey, "Shift"}, "s",  function(c) c:move_to_screen() end))
 clientbuttons = awful.button({modkey}, 1,     function(c) awful.mouse.client.move(c) end)
 
+--------------------
+-- Battery widget --
+--------------------
+battery = wibox.widget.textbox()
+battery_timer = timer({ timeout = 30 })
+battery_timer:connect_signal("timeout",
+                             function()
+                                awful.spawn.easy_async("/home/hybris/.config/awesome/battery",
+                                                       function(stdout, stderr, reason, exit_code)
+                                                          battery:set_markup_silently(stdout)
+                                                       end)
+                             end)
+awful.spawn.easy_async("/home/hybris/.config/awesome/battery",
+                       function(stdout, stderr, reason, exit_code)
+                          battery:set_markup_silently(stdout)
+                       end)
+battery_timer:start()
+
+
 -------------
 -- Display --
 -------------
 awful.screen.connect_for_each_screen(function(s)
    awful.tag({1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42}, s, awful.layout.suit.fair)
-   s.topbox = awful.wibar({position = "top", screen = s, height = 20})
+   s.topbox = awful.wibar({position = "top", screen = s, height = 22})
    s.topbox:setup({layout = wibox.layout.align.horizontal,
                    {layout = wibox.layout.fixed.horizontal, awful.widget.taglist(s, awful.widget.taglist.filter.noempty), wibox.widget.textbox(" | ")},
                    awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, nil),
-                   {layout = wibox.layout.fixed.horizontal, wibox.widget.systray(), wibox.widget.textbox(" | "), wibox.widget.textclock("<span color='" .. theme.fg_focus .. "'>%d/%m/%Y %R</span>")}})
-   gears.wallpaper.maximized("/home/hybris/.wallpaper", s, "#000000")
+                   {layout = wibox.layout.fixed.horizontal, wibox.widget.systray(), wibox.widget.textbox(" | "), wibox.widget.textclock("<span color='" .. theme.fg_focus .. "'>%d/%m/%Y %R</span>"), wibox.widget.textbox(" | "), battery}})
+   gears.wallpaper.set("#000000")
+   gears.wallpaper.fit("/home/hybris/.wallpaper", s, "#000000")
 end)
 
 awful.rules.rules = {{rule = {}, properties = {border_width = beautiful.border_width, focus = awful.client.focus.filter, size_hints_honor = false, keys = clientkeys, buttons = clientbuttons, screen = "eDP1"}}}
@@ -133,4 +149,3 @@ awful.spawn.with_shell("killall xbindkeys 2> /dev/null      ; xbindkeys")
 awful.spawn.with_shell("killall nm-applet 2> /dev/null      ; nm-applet")
 awful.spawn.with_shell("killall pasystray 2> /dev/null      ; pasystray")
 awful.spawn.with_shell("killall blueman-applet 2> /dev/null ; blueman-applet > /dev/null 2>&1")
-awful.spawn.with_shell("ps aux | grep batterymon | grep -v grep || python /home/hybris/dev/misc/batterymon-clone/batterymon -t 24x24_wide")

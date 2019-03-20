@@ -1,0 +1,23 @@
+#! /bin/bash
+
+ACPI_RESULT=$(acpi)
+ACPI_FULL=$(echo $ACPI_RESULT | grep Full)
+ACPI_CHARGING=$(echo $ACPI_RESULT | grep Charging)
+ACPI_UNKNOWN=$(echo $ACPI_RESULT | grep Unknown)
+ACPI_DISCHARGING=$(echo $ACPI_RESULT | grep Discharging)
+ACPI_PERCENT=$(echo $ACPI_RESULT | sed 's/.* \([0-9]*\)%.*/\1/')
+ACPI_TIME=$(echo $ACPI_RESULT | sed 's/.*\(..:..\):...*/\1/')
+
+if [ "x${ACPI_FULL}" != x ]; then
+    echo "<span color='green'>${ACPI_PERCENT}%</span>"
+elif [ "x${ACPI_CHARGING}" != x ]; then
+    echo "<span color='green'>↗  ${ACPI_PERCENT}%</span> (${ACPI_TIME})"
+elif [ "x${ACPI_UNKNOWN}" != x ]; then
+    echo "<span color='magenta'>? ${ACPI_PERCENT}%</span>"
+elif [ "x${ACPI_DISCHARGING}" != x ]; then
+    if [ ${ACPI_PERCENT} -gt 33 ]; then
+        echo "<span color='yellow'>↘  ${ACPI_PERCENT}%</span> (${ACPI_TIME})"
+    else
+        echo "<span color='red'>↘  ${ACPI_PERCENT}%</span> (${ACPI_TIME})"
+    fi
+fi
