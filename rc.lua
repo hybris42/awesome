@@ -91,25 +91,6 @@ clientkeys = awful.util.table.join({},
            awful.key({modkey, "Shift"}, "s",  function(c) c:move_to_screen() end))
 clientbuttons = awful.button({modkey}, 1,     function(c) awful.mouse.client.move(c) end)
 
---------------------
--- Battery widget --
---------------------
-battery = wibox.widget.textbox()
-battery_timer = timer({ timeout = 30 })
-battery_timer:connect_signal("timeout",
-                             function()
-                                awful.spawn.easy_async("/home/hybris/.config/awesome/battery",
-                                                       function(stdout, stderr, reason, exit_code)
-                                                          battery:set_markup_silently(stdout)
-                                                       end)
-                             end)
-awful.spawn.easy_async("/home/hybris/.config/awesome/battery",
-                       function(stdout, stderr, reason, exit_code)
-                          battery:set_markup_silently(stdout)
-                       end)
-battery_timer:start()
-
-
 -------------
 -- Display --
 -------------
@@ -119,12 +100,13 @@ awful.screen.connect_for_each_screen(function(s)
    s.topbox:setup({layout = wibox.layout.align.horizontal,
                    {layout = wibox.layout.fixed.horizontal, awful.widget.taglist(s, awful.widget.taglist.filter.noempty), wibox.widget.textbox(" | ")},
                    awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, nil),
-                   {layout = wibox.layout.fixed.horizontal, wibox.widget.systray(), wibox.widget.textbox(" | "), wibox.widget.textclock("<span color='" .. theme.fg_focus .. "'>%d/%m/%Y %R</span>"), wibox.widget.textbox(" | "), battery}})
+                   {layout = wibox.layout.fixed.horizontal, wibox.widget.systray(), wibox.widget.textbox(" | "), wibox.widget.textclock("<span color='" .. theme.fg_focus .. "'>%d/%m/%Y %R</span>"), wibox.widget.textbox(" | "), require("obvious.battery")()}})
    gears.wallpaper.set("#000000")
    gears.wallpaper.fit("/home/hybris/.wallpaper", s, "#000000")
 end)
 
-awful.rules.rules = {{rule = {}, properties = {border_width = beautiful.border_width, focus = awful.client.focus.filter, size_hints_honor = false, keys = clientkeys, buttons = clientbuttons, screen = "eDP1"}}}
+awful.rules.rules = {{rule = {}, properties = {border_width = beautiful.border_width, focus = awful.client.focus.filter, size_hints_honor = false, keys = clientkeys, buttons = clientbuttons, screen = "eDP1"}},
+                     {rule = { class = "URxvt" }, properties = { opacity = 0.85 }}}
 
 client.connect_signal("manage", function (c)
                          if awesome.startup then
@@ -149,3 +131,4 @@ awful.spawn.with_shell("killall xbindkeys 2> /dev/null      ; xbindkeys")
 awful.spawn.with_shell("killall nm-applet 2> /dev/null      ; nm-applet")
 awful.spawn.with_shell("killall pasystray 2> /dev/null      ; pasystray")
 awful.spawn.with_shell("killall blueman-applet 2> /dev/null ; blueman-applet > /dev/null 2>&1")
+awful.spawn.with_shell("killall unagi 2> /dev/null          ; unagi > /dev/null 2>&1")
