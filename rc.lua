@@ -49,6 +49,7 @@ terminal   = "urxvtc"
 globalkeys = awful.util.table.join({},
            awful.key({modkey, "Control"}, "r",     awesome.restart,                                                                     {description = "Reload awesome",                             group = "Awesome"}),
            awful.key({modkey, "Control"}, "q",     awesome.quit,                                                                        {description = "Quit awesome",                               group = "Awesome"}),
+           awful.key({modkey}, "z",                function() awful.spawn("slock") end,                                                 {description = "Lock computer",                              group = "Launcher"}),
            awful.key({modkey}, "h",                hotkeys_popup.show_help,                                                             {description = "Show this help",                             group = "Awesome"}),
 
            awful.key({modkey}, "Return",           function() awful.spawn(terminal) end,                                                {description = "Spawn a terminal",                           group = "Launcher"}),
